@@ -10,34 +10,34 @@ using MongoDB.Bson;
 
 namespace MouseDev_Server_Api.Database.BL
 {
-    public class ProjectBL
+    public static class ProjectBL
     {
         private const string COLLECTION_NAME = "Project";
-        public async Task<IEnumerable<Project>> GetAllNotes()
-        {
-            try
-            {
-                return await DAL<Project>.GetAll(COLLECTION_NAME);
-            }
-            catch (Exception ex)
-            {
-                // log or manage the exception
-                throw ex;
-            }
-        }
-        public async Task<Project> GetNote(string id)
-        {
-            try
-            {
-                return await DAL<Project>
-                                .GetById(COLLECTION_NAME , id);
-            }
-            catch (Exception ex)
-            {
-                // log or manage the exception
-                throw ex;
-            }
-        }
+        //public static async Task<IEnumerable<Project>> GetAllNotes()
+        //{
+        //    try
+        //    {
+        //        return await DAL<Project>.GetAll(COLLECTION_NAME);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        // log or manage the exception
+        //        throw ex;
+        //    }
+        //}
+        //public static async Task<Project> GetOne(string id)
+        //{
+        //    try
+        //    {
+        //        return await DAL<Project>
+        //                        .GetById(COLLECTION_NAME , id);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        // log or manage the exception
+        //        throw ex;
+        //    }
+        //}
 
         // query after body text, updated time, and header image size
         //

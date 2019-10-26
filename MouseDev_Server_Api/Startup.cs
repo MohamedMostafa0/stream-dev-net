@@ -12,6 +12,9 @@ using MouseDev_Server_Api.Services.User;
 using MouseDev_Server_Api.Services.Auth;
 using Microsoft.AspNetCore.Http;
 using System;
+using MouseDev_Server_Api.Database.DAL;
+using MouseDev_Server_Api.Database.Models;
+using MouseDev_Server_Api.Database.BL;
 
 namespace MouseDev_Server_Api
 {
@@ -27,6 +30,7 @@ namespace MouseDev_Server_Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // database
             services.Configure<DBSettings>(options =>
             {
                 options.ConnectionString
@@ -34,15 +38,17 @@ namespace MouseDev_Server_Api
                 options.DB_Name
                     = Configuration.GetSection("MongoConnection:Database").Value;
             });
+            services.AddTransient<IClientBL, ClientBL>();
+            // routing
             services.AddMvc(opt =>
             {
                 opt.UseCentralRoutePrefix(new RouteAttribute("api/v1"));
             }).AddSessionStateTempDataProvider();
             services.AddSession();
+            // token
             services.Configure<TokenManagement>(Configuration.GetSection("tokenManagement"));
             TokenManagement token = Configuration.GetSection("tokenManagement").Get<TokenManagement>();
             byte[] secret = Encoding.ASCII.GetBytes(token.Secret);
-
             services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -60,9 +66,17 @@ namespace MouseDev_Server_Api
                     ClockSkew = TimeSpan.Zero
                 };
             });
-
             services.AddScoped<IAuthenticateService, TokenAuthenticationService>();
             services.AddScoped<IUserManagementService, UserManagementService>();
+            // cors
+            services.AddCors(options =>
+            {
+                options.AddPolicy("CorsPolicy",
+                    builder => builder.AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials());
+            });
         }
 
 
@@ -77,17 +91,9 @@ namespace MouseDev_Server_Api
             {
                 app.UseHsts();
             }
-            app.UseCorsMiddleware();
-            app.UseSession();  
-            app.Use(async (context, next) =>
-            {
-                var JWToken = context.Session.GetString("JWToken");
-                if (!string.IsNullOrEmpty(JWToken))
-                {
-                    context.Request.Headers.Add("Authorization", "Bearer " + JWToken);
-                }
-                await next();
-            });
+            app.UseCors("CorsPolicy");
+            app.UseSession();
+            app.UseAuthMiddleware();
             app.UseAuthentication();
             app.UseHttpsRedirection();
             app.UseMvc();

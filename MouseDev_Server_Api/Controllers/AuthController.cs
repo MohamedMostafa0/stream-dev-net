@@ -1,10 +1,15 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MouseDev_Server_Api.Database.BL;
+using MouseDev_Server_Api.Database.Models;
+using MouseDev_Server_Api.Helpers;
 using MouseDev_Server_Api.Services.Auth;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace MouseDev_Server_Api.Controllers
 {
@@ -12,14 +17,16 @@ namespace MouseDev_Server_Api.Controllers
     public class AuthController : Controller
     {
         private readonly IAuthenticateService _authService;
-        public AuthController(IAuthenticateService authService)
+        private readonly IClientBL _clientRepository;
+        public AuthController(IAuthenticateService authService , IClientBL clientRepository)
         {
             _authService = authService;
+            _clientRepository = clientRepository;
         }
 
         [Route("signin")]
         [HttpPost]
-        public IActionResult RequestToken([FromBody] TokenRequest request)
+        public async Task<IActionResult> RequestToken([FromBody] TokenRequest request)
         {
             if (!ModelState.IsValid)
             {
@@ -29,14 +36,14 @@ namespace MouseDev_Server_Api.Controllers
             if (_authService.IsAuthenticated(request, out token))
             {
                 HttpContext.Session.SetString("JWToken", token);
-                return Ok(token);
+                return await ResultHandler.Success();
             }
 
             return BadRequest("Invalid Request");
         }
         [HttpPost]
         [Route("refresh")]
-        public IActionResult RefreshToken()
+        public async Task<IActionResult> RefreshToken()
         {
             if (!ModelState.IsValid)
             {
@@ -45,7 +52,7 @@ namespace MouseDev_Server_Api.Controllers
             if (_authService.GetPrincipalFromExpiredToken(HttpContext.Session.GetString("JWToken"), out string newToken))
             {
                 HttpContext.Session.SetString("JWToken", newToken);
-                return Ok(newToken);
+                return await ResultHandler.Success();
             }
             else
             {
@@ -56,12 +63,12 @@ namespace MouseDev_Server_Api.Controllers
         [Authorize]
         [Route("signout")]
         [HttpPost]
-        public IActionResult Signout()
+        public async Task<IActionResult> Signout()
         {
             try
             {
                 HttpContext.Session.Clear();
-                return CreateAuthModel();
+                return await CreateAuthModel();
             }
             catch
             {
@@ -69,11 +76,11 @@ namespace MouseDev_Server_Api.Controllers
             }
         }
 
-        private JsonResult CreateAuthModel()
+        private async Task<JsonResult> CreateAuthModel()
         {
             Claim userClaim = HttpContext.User.Claims.FirstOrDefault(a => a.Type == ClaimTypes.Name);
             AuthModel authModel = JsonConvert.DeserializeObject<AuthModel>(userClaim.Value);
-            return new JsonResult(authModel);
+            return await ResultHandler.Success(authModel);
         }
     }
 }
