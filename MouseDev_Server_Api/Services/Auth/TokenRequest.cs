@@ -14,4 +14,10 @@ namespace MouseDev_Server_Api.Services.Auth
         [JsonProperty("password")]
         public string Password { get; set; }
     }
+    public class OldTokenRequest
+    {
+        [Required]
+        [JsonProperty("oldToken")]
+        public string OldToken { get; set; }
+    }
 }

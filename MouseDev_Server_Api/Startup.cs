@@ -11,6 +11,7 @@ using System.Text;
 using MouseDev_Server_Api.Services.User;
 using MouseDev_Server_Api.Services.Auth;
 using Microsoft.AspNetCore.Http;
+using System;
 
 namespace MouseDev_Server_Api
 {
@@ -49,13 +50,14 @@ namespace MouseDev_Server_Api
             }).AddJwtBearer(x =>
             {
                 x.RequireHttpsMetadata = false;
-                x.SaveToken = true;
+                x.SaveToken = false;
                 x.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(secret),
                     ValidateIssuer = false,
-                    ValidateAudience = false
+                    ValidateAudience = false,
+                    ClockSkew = TimeSpan.Zero
                 };
             });
 
