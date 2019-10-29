@@ -10,6 +10,5 @@ namespace MouseDev_Server_Api.Database.Models
         [BsonRepresentation(BsonType.ObjectId)]
         [BsonElement("_id")]
         public ObjectId Id { get; set; }
-
     }
 }

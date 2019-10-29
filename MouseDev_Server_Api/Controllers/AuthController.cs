@@ -2,11 +2,9 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MouseDev_Server_Api.Database.BL;
-using MouseDev_Server_Api.Database.Models;
 using MouseDev_Server_Api.Helpers;
 using MouseDev_Server_Api.Services.Auth;
 using Newtonsoft.Json;
-using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
